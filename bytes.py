@@ -36,6 +36,20 @@ def hack_line_numbers(code):
         else:
             new_consts.append(const)
 
+    # code_co_lnotab = new_lnotab
+    # n_bytes = len(code.co_code)
+    # lb_ranges = [code_co_lnotab[b*2] for b in range(len(code_co_lnotab)//2) ]
+    # lb_ranges += [ n_bytes - sum(lb_ranges) ]
+
+    # prev_lb = 0
+    # new_lnotab = bytearray([])
+    # for lb in lb_ranges:
+    #   new_lnotab += bytearray([0, 255, 0, 255, 0, 255, 0]) # "\x00\xFF\x00\xFF\x00\xFF\x00"
+    #   new_lnotab += bytes([0xEB - prev_lb])
+    #   new_lnotab += bytearray([1, 1]) * lb
+    #   prev_lb = lb
+
+
     new_code = types.CodeType(code.co_argcount, code.co_kwonlyargcount,
         code.co_nlocals, code.co_stacksize, code.co_flags,
         code.co_code, tuple(new_consts), code.co_names,
@@ -69,10 +83,22 @@ def show_code(code, indent=''):
     print("%sfilename %r" % (indent, code.co_filename))
     print("%sname %r" % (indent, code.co_name))
     print("%sfirstlineno %d" % (indent, code.co_firstlineno))
+
+    show_hex("lnotab", code.co_lnotab, indent=indent)
+
     n_bytes = len(code.co_code)
     lb_ranges = [code.co_lnotab[b*2] for b in range(len(code.co_lnotab)//2) ]
     lb_ranges += [ n_bytes - sum(lb_ranges) ]
-    show_hex("lnotab", code.co_lnotab, indent=indent)
+
+    prev_lb = 0
+    new_lnotab = bytearray([])
+    for lb in lb_ranges:
+        new_lnotab += bytearray([0, 255, 0, 255, 0, 255, 0]) # "\x00\xFF\x00\xFF\x00\xFF\x00"
+        new_lnotab += bytes([0xEB - prev_lb])
+        new_lnotab += bytearray([1, 1]) * lb
+        prev_lb = lb
+
+    show_hex("lnotab", new_lnotab, indent=indent)
     
 def show_hex(label, h, indent):
     #h = h.encode('hex')

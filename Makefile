@@ -5,10 +5,10 @@ bytes:
 reset:
 	cp sample.cpython-36.pyc __pycache__/
 
-hack:
+hack: bytes
 	python3 bytes.py __pycache__/sample.cpython-36.pyc
 
-run:
+run: hack
 	python3 tracesample.py
 
 clean:
